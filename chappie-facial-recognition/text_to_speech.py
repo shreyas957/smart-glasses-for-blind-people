@@ -49,9 +49,10 @@ def process_and_play_audio():
 
     # Synthesize speech using AWS Polly
     response = polly_client.synthesize_speech(
+        Engine='generative',
         Text=text_to_speak,
         OutputFormat='mp3',
-        VoiceId='Joanna'
+        VoiceId='Kajal'
     )
 
     # Save the audio stream to a temporary file

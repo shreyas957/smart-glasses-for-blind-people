@@ -44,7 +44,7 @@ def detectFace(frame, face_cascade):
 def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='Facial recognition')
-    parser.add_argument('--collection', help='Collection Name', default='chappie-faces')
+    parser.add_argument('--collection', help='Collection Name', default='my-face-collection')
     parser.add_argument('--face_cascade', help='Path to face cascade.', default='/home/shreyas/Desktop/Smart-glasses/.venv/lib/python3.11/site-packages/cv2/data/haarcascade_frontalface_alt2.xml')
     args = parser.parse_args()
 
