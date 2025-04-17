@@ -4,6 +4,7 @@ import argparse
 import boto3
 import time
 import os
+import speech_recognition as sr
 
 
 def recognizeFace(client, image, collection):
@@ -58,7 +59,6 @@ def main():
     # Initialize AWS Rekognition client
     client = boto3.client('rekognition')
     
-    #collection already created
     #collection_id = 'my-face-collection'
     #response = client.create_collection(CollectionId=collection_id)
 
@@ -100,20 +100,76 @@ def main():
             print(f'Hello {person_name}! What is my purpose?')
         else:
             print('Unknown Human Detected!')
-            response = polly_client.synthesize_speech(
-                                        Engine='generative',
-                                        Text='Unknown Person', 
-                                        OutputFormat='mp3', 
-                                        VoiceId='Kajal')
+            pygame.mixer.music.load('resources/newPerson.mp3')
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy():
+                pass
+            
+            recognizer = sr.Recognizer()
+            mic = sr.Microphone()
+            print("BEEP!!")
+
+            with mic as source:
+                print("Listening for name...")
+                recognizer.adjust_for_ambient_noise(source)
+                audio = recognizer.listen(source, timeout=10)
+
+            try:
+                spoken_name = recognizer.recognize_google(audio)
+                print(f"You said: {spoken_name}")
+                spoken_name = spoken_name.strip().replace(" ", "_")
+                # Save the unknown face to Rekognition with the spoken name
+                with open(image_path, 'rb') as f:
+                    index_response = client.index_faces(
+                    CollectionId=args.collection,
+                    Image={'Bytes': f.read()},
+                    ExternalImageId=spoken_name,
+                    DetectionAttributes=['ALL']
+                )
+    
+                print(f"Added {spoken_name} to collection.")
+    
+                # Say thank you
+                response = polly_client.synthesize_speech(
+                    Engine='generative',
+                    Text=f'Thank you {spoken_name}, I will remember you!', 
+                    OutputFormat='mp3', 
+                    VoiceId='Kajal'
+                )
+                with open('output.mp3', 'wb') as f:
+                    f.write(response['AudioStream'].read())
+                pygame.mixer.music.load('output.mp3')
+                pygame.mixer.music.play()
+                while pygame.mixer.music.get_busy():
+                    pass
+                if os.path.exists('output.mp3'):
+                # Delete the file
+                    os.remove('output.mp3')
+
+            except sr.UnknownValueError:
+                print("Sorry, could not understand the name.")
+                response = polly_client.synthesize_speech(
+                    Engine='generative',
+                    Text='Sorry, I could not understand the name. Please try again next time.', 
+                    OutputFormat='mp3', 
+                    VoiceId='Kajal'
+                )
             with open('output.mp3', 'wb') as f:
                 f.write(response['AudioStream'].read())
-                                        
             pygame.mixer.music.load('output.mp3')
             pygame.mixer.music.play()
-            if os.path.exists(f'output.mp3'):
+            #while pygame.mixer.music.get_busy():
+                #pass
+            while pygame.mixer.music.get_busy():
+                time.sleep(0.1)  # pause for 100 milliseconds
+            if os.path.exists('output.mp3'):
                 # Delete the file
                 os.remove('output.mp3')
+            
         time.sleep(10)
+    if image_path and os.path.exists(image_path):
+        os.remove(image_path)
+        print(f'Deleted temporary image: {image_path}')
 
     if cv.waitKey(20) & 0xFF == ord('q'):
         os.abort()
