@@ -57,6 +57,10 @@ def main():
 
     # Initialize AWS Rekognition client
     client = boto3.client('rekognition')
+    
+    #collection already created
+    #collection_id = 'my-face-collection'
+    #response = client.create_collection(CollectionId=collection_id)
 
     # Initialize webcam
     cam = cv.VideoCapture(0)
@@ -81,9 +85,11 @@ def main():
             similarity = round(response['FaceMatches'][0]['Similarity'], 1)
             confidence = round(response['FaceMatches'][0]['Face']['Confidence'], 2)
             print(f'Identity matched {person_name} with {similarity} similarity and {confidence} confidence.')
-            response = polly_client.synthesize_speech(Text=f'Person is {person_name}', 
+            response = polly_client.synthesize_speech(
+                                        Engine='generative',
+                                        Text=f'Person is {person_name}', 
                                         OutputFormat='mp3', 
-                                        VoiceId='Joanna')
+                                        VoiceId='Kajal')
             with open('output.mp3', 'wb') as f:
                 f.write(response['AudioStream'].read())
             pygame.mixer.music.load('output.mp3')
@@ -94,9 +100,11 @@ def main():
             print(f'Hello {person_name}! What is my purpose?')
         else:
             print('Unknown Human Detected!')
-            response = polly_client.synthesize_speech(Text='Unknown Person', 
+            response = polly_client.synthesize_speech(
+                                        Engine='generative',
+                                        Text='Unknown Person', 
                                         OutputFormat='mp3', 
-                                        VoiceId='Joanna')
+                                        VoiceId='Kajal')
             with open('output.mp3', 'wb') as f:
                 f.write(response['AudioStream'].read())
                                         

@@ -47,7 +47,7 @@ def capture_and_index_face(collection, name):
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description='Capture image and add to collection.')
-parser.add_argument('--collection', help='Collection Name', default='chappie-faces')
+parser.add_argument('--collection', help='Collection Name', default='my-face-collection')
 parser.add_argument('--name', help='Face Name')
 args = parser.parse_args()
 
